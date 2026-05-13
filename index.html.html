@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="slides-format" content="viewport">
+    <title>找話題不尷尬 — 三招讓你開口就有話聊</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-bg: #0f1b2d;
+            --color-bg-deep: #070e1a;
+            --color-surface: #1a2d44;
+            --color-text: #f0f6ff;
+            --color-text-secondary: #a8c4e0;
+            --color-text-muted: #6b8caa;
+            --color-accent-1: #38bdf8;
+            --color-accent-2: #fb923c;
+            --color-accent-3: #a78bfa;
+            --color-glass-bg: rgba(255,255,255,0.06);
+            --color-glass-border: rgba(255,255,255,0.1);
+            --color-vignette: rgba(0,0,0,0.45);
+            --font-display: 'Noto Serif TC', serif;
+            --font-body: 'Noto Sans TC', sans-serif;
+        }
+    </style>
+    <style>
+        :root { --color-bg: #0f1b2d; --color-text: #f0f6ff; --glow-color-rgb: 56,189,248; }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: var(--color-bg); margin: 0; }
+        body { font-family: 'Noto Sans TC', sans-serif; color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; }
+        .deck { width: 100vw; height: 100vh; position: relative; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+        .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+        .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1100px; padding: clamp(1.5rem, 4vw, 3.5rem); }
+        .nav-controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; background: var(--color-glass-bg); backdrop-filter: blur(10px); padding: 8px 20px; border-radius: 40px; border: 1px solid var(--color-glass-border); }
+        .nav-btn { width: 36px; height: 36px; border: none; background: var(--color-glass-bg); color: var(--color-accent-1); border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+        .nav-btn:hover { background: var(--color-glass-border); }
+        .slide-dots { display: flex; gap: 6px; }
+        .slide-dots .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-glass-border); cursor: pointer; transition: background 0.3s, transform 0.3s; }
+        .slide-dots .dot.active { background: var(--color-accent-1); transform: scale(1.3); }
+        .slide-counter { font-size: 0.75rem; color: var(--color-text-muted); min-width: 40px; text-align: center; }
+        .reveal { opacity: 0; transform: translateY(20px); }
+        .text-glow { text-shadow: 0 0 20px rgba(56,189,248,0.5), 0 0 40px rgba(56,189,248,0.2); }
+        .stat-glow { text-shadow: 0 0 30px rgba(56,189,248,0.6), 0 0 60px rgba(56,189,248,0.25); }
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(56,189,248,0.5), 0 0 40px rgba(56,189,248,0.2); }
+            50% { text-shadow: 0 0 30px rgba(56,189,248,0.8), 0 0 60px rgba(56,189,248,0.3); }
+        }
+        @keyframes float-slow { 0% { transform: translate(0,0) scale(1); } 25% { transform: translate(60px,-50px) scale(1.12); } 50% { transform: translate(-40px,40px) scale(0.9); } 75% { transform: translate(50px,20px) scale(1.08); } 100% { transform: translate(0,0) scale(1); } }
+        @keyframes float-drift { 0% { transform: translate(0,0) scale(1) rotate(0deg); } 33% { transform: translate(-50px,-60px) scale(1.15) rotate(3deg); } 66% { transform: translate(40px,30px) scale(0.88) rotate(-2deg); } 100% { transform: translate(0,0) scale(1) rotate(0deg); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float-slow 10s ease-in-out infinite; }
+        .blob:nth-child(2) { animation: float-drift 14s ease-in-out infinite; }
+        .blob:nth-child(3) { animation: float-slow 18s ease-in-out infinite reverse; }
+        .slide::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-repeat: repeat; background-size: 256px 256px; opacity: 0.03; mix-blend-mode: overlay; }
+        .slide::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, var(--color-vignette) 100%); }
+
+        /* Step badge */
+        .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; font-weight: 900; font-size: 1rem; flex-shrink: 0; }
+
+        /* Tag pill */
+        .tag-pill { display: inline-block; padding: 0.2rem 0.75rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+        /* Bingo card */
+        .bingo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .bingo-cell { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 4px; text-align: center; font-size: clamp(0.55rem, 1.1vw, 0.72rem); line-height: 1.3; display: flex; align-items: center; justify-content: center; min-height: 52px; }
+        .bingo-cell.free { background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(167,139,250,0.25)); border-color: rgba(56,189,248,0.4); font-weight: 700; color: #38bdf8; }
+
+        /* Wrong/right examples */
+        .ex-wrong { border-left: 3px solid #f87171; background: rgba(248,113,113,0.07); }
+        .ex-right { border-left: 3px solid #34d399; background: rgba(52,211,153,0.07); }
+
+        /* Card hover */
+        .card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; cursor: default; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(56,189,248,0.12); }
+
+        /* Timer bar */
+        .timer-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); }
+        .timer-bar-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .timer-bar-fill { height: 100%; border-radius: 3px; }
+    </style>
+</head>
+<body>
+<div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+<div class="deck">
+
+<!-- ═══ SLIDE 1: TITLE ═══ -->
+<div class="slide slide-1 active" data-slide="1">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:520px;height:520px;top:-120px;right:-120px;background:var(--color-accent-1);opacity:0.14;"></div>
+        <div class="blob" style="width:320px;height:320px;bottom:-80px;left:-60px;background:var(--color-accent-2);opacity:0.12;"></div>
+        <div class="blob" style="width:240px;height:240px;top:35%;left:12%;background:var(--color-accent-3);opacity:0.10;"></div>
+    </div>
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content text-center">
+        <div style="font-size:110px;margin-bottom:1rem;animation:float 3s ease-in-out infinite;" class="reveal">💬</div>
+        <h1 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2.8rem,6.5vw,5rem);font-weight:900;background:linear-gradient(135deg,#38bdf8,#fb923c,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.01em;margin-bottom:1rem;">找話題不尷尬</h1>
+        <p class="reveal" style="font-size:clamp(0.85rem,1.4vw,1.2rem);color:var(--color-text-muted);letter-spacing:0.25em;text-transform:uppercase;">三招讓你開口就有話聊</p>
+        <div class="reveal" style="margin-top:2.5rem;display:inline-flex;gap:1.5rem;align-items:center;">
+            <span style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);padding:0.35rem 1rem;border-radius:999px;font-size:0.92rem;color:#38bdf8;">🏫 高中・國中班</span>
+            <span style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.25);padding:0.35rem 1rem;border-radius:999px;font-size:0.92rem;color:#fb923c;">⏱ 50 分鐘</span>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 2: 課程總覽 ═══ -->
+<div class="slide slide-2" data-slide="2">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:380px;height:380px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:0.08;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:var(--color-accent-3);opacity:0.07;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(56,189,248,0.12);color:#38bdf8;margin-bottom:0.75rem;">課程流程</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2.2rem,4.5vw,3.2rem);font-weight:900;margin-bottom:2rem;">今天的 <span style="color:#38bdf8;">50 分鐘</span>，怎麼安排？</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.5rem;border-left:4px solid #38bdf8;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div class="step-badge" style="background:linear-gradient(135deg,rgba(56,189,248,0.3),rgba(56,189,248,0.1));color:#38bdf8;">1</div>
+                    <div>
+                        <div style="font-size:1.15rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.08em;">10 分鐘</div>
+                        <div style="font-weight:700;font-size:1.15rem;">核心概念講解</div>
+                    </div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">三原則介紹 + 示範 2 個對話例子（音樂、遊戲）</p>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.5rem;border-left:4px solid #fb923c;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div class="step-badge" style="background:linear-gradient(135deg,rgba(251,146,60,0.3),rgba(251,146,60,0.1));color:#fb923c;">2</div>
+                    <div>
+                        <div style="font-size:1.15rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.08em;">15 分鐘</div>
+                        <div style="font-weight:700;font-size:1.15rem;">賓果破冰遊戲</div>
+                    </div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">25 題興趣賓果卡，互相找同答案簽名，跨組互動</p>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.5rem;border-left:4px solid #a78bfa;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div class="step-badge" style="background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));color:#a78bfa;">3</div>
+                    <div>
+                        <div style="font-size:1.15rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.08em;">15 分鐘</div>
+                        <div style="font-weight:700;font-size:1.15rem;">角色扮演練習</div>
+                    </div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">分組模擬帶小隊，抽卡練習開場白 + 延續對話</p>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.5rem;border-left:4px solid #34d399;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div class="step-badge" style="background:linear-gradient(135deg,rgba(52,211,153,0.3),rgba(52,211,153,0.1));color:#34d399;">4</div>
+                    <div>
+                        <div style="font-size:1.15rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.08em;">10 分鐘</div>
+                        <div style="font-weight:700;font-size:1.15rem;">分享與總結</div>
+                    </div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">心得回饋、優雅結束技巧、課後應用承諾</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 3: 引發共鳴 ═══ -->
+<div class="slide slide-3" data-slide="3">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:400px;height:400px;top:-80px;left:-80px;background:var(--color-accent-3);opacity:0.10;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-60px;right:-40px;background:var(--color-accent-2);opacity:0.09;"></div>
+    </div>
+    <div class="content text-center">
+        <div class="reveal" style="font-size:84px;margin-bottom:1.5rem;">😶</div>
+        <p class="reveal tag-pill" style="background:rgba(167,139,250,0.15);color:#a78bfa;margin-bottom:1rem;">你有過這種感覺嗎？</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:900;margin-bottom:2rem;line-height:1.3;">和別人站在一起<br><span style="color:#a78bfa;">腦袋卻一片空白…</span></h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:750px;margin:0 auto;">
+            <div class="reveal card-hover" style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:1.2rem;text-align:left;">
+                <div style="font-size:1.65rem;margin-bottom:0.5rem;">🤐</div>
+                <p style="font-size:1.03rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">和新朋友站在一起，<strong style="color:var(--color-text);">不知道說什麼</strong></p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:1.2rem;text-align:left;">
+                <div style="font-size:1.65rem;margin-bottom:0.5rem;">😬</div>
+                <p style="font-size:1.03rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">對話停了，陷入<strong style="color:var(--color-text);">尷尬沉默</strong></p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:1.2rem;text-align:left;">
+                <div style="font-size:1.65rem;margin-bottom:0.5rem;">💭</div>
+                <p style="font-size:1.03rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">想開口，但<strong style="color:var(--color-text);">腦袋一片空白</strong></p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:1.2rem;text-align:left;">
+                <div style="font-size:1.65rem;margin-bottom:0.5rem;">🫤</div>
+                <p style="font-size:1.03rem;color:var(--color-text-secondary);line-height:1.6;margin:0;">明明想交朋友，<strong style="color:var(--color-text);">卻不知從何開始</strong></p>
+            </div>
+        </div>
+        <p class="reveal" style="margin-top:1.5rem;font-size:1.25rem;color:#34d399;font-weight:600;">👆 這些都是可以學習和改變的！</p>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 4: 三原則總覽 ═══ -->
+<div class="slide slide-4" data-slide="4">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:450px;height:450px;top:-100px;right:-100px;background:var(--color-accent-1);opacity:0.10;"></div>
+        <div class="blob" style="width:300px;height:300px;bottom:-80px;left:-60px;background:var(--color-accent-2);opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(56,189,248,0.12);color:#38bdf8;margin-bottom:0.75rem;">核心概念</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2.2rem,4.5vw,3.2rem);font-weight:900;margin-bottom:0.5rem;">找話題 <span style="color:#38bdf8;">三大原則</span></h2>
+        <p class="reveal" style="color:var(--color-text-secondary);font-size:1.35rem;margin-bottom:2rem;">掌握這三步，對話自然流暢，不再尷尬</p>
+        <div style="display:flex;flex-direction:column;gap:1.1rem;">
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.4rem 2rem;display:flex;align-items:center;gap:1.5rem;">
+                <div style="font-size:3rem;flex-shrink:0;">👀</div>
+                <div>
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.4rem;">
+                        <span style="background:linear-gradient(135deg,#38bdf8,#06b6d4);padding:0.15rem 0.7rem;border-radius:999px;font-size:0.97rem;font-weight:900;color:#fff;letter-spacing:0.06em;">原則一</span>
+                        <h3 style="font-weight:800;font-size:1.35rem;margin:0;color:#38bdf8;">觀察環境與興趣</h3>
+                    </div>
+                    <p style="font-size:1.15rem;color:var(--color-text-secondary);margin:0;line-height:1.6;">用眼睛觀察對方的特徵、配件、行為，從中找到話題切入點</p>
+                </div>
+                <div style="margin-left:auto;font-size:1.55rem;opacity:0.6;">→</div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.4rem 2rem;display:flex;align-items:center;gap:1.5rem;">
+                <div style="font-size:3rem;flex-shrink:0;">🤝</div>
+                <div>
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.4rem;">
+                        <span style="background:linear-gradient(135deg,#fb923c,#f97316);padding:0.15rem 0.7rem;border-radius:999px;font-size:0.97rem;font-weight:900;color:#fff;letter-spacing:0.06em;">原則二</span>
+                        <h3 style="font-weight:800;font-size:1.35rem;margin:0;color:#fb923c;">共通點開場</h3>
+                    </div>
+                    <p style="font-size:1.15rem;color:var(--color-text-secondary);margin:0;line-height:1.6;">找出雙方的共同點（環境、時間、經歷），用「我們都⋯⋯」句型自然開場</p>
+                </div>
+                <div style="margin-left:auto;font-size:1.55rem;opacity:0.6;">→</div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.4rem 2rem;display:flex;align-items:center;gap:1.5rem;">
+                <div style="font-size:3rem;flex-shrink:0;">💬</div>
+                <div>
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.4rem;">
+                        <span style="background:linear-gradient(135deg,#a78bfa,#8b5cf6);padding:0.15rem 0.7rem;border-radius:999px;font-size:0.97rem;font-weight:900;color:#fff;letter-spacing:0.06em;">原則三</span>
+                        <h3 style="font-weight:800;font-size:1.35rem;margin:0;color:#a78bfa;">開放問題延續</h3>
+                    </div>
+                    <p style="font-size:1.15rem;color:var(--color-text-secondary);margin:0;line-height:1.6;">用「你覺得⋯⋯？」「你最喜歡⋯⋯？」讓對話自然延伸，避免話題斷線</p>
+                </div>
+                <div style="margin-left:auto;font-size:1.55rem;opacity:0.6;">→</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 5: 原則一 ═══ -->
+<div class="slide slide-5" data-slide="5">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:420px;height:420px;top:-90px;right:-90px;background:#38bdf8;opacity:0.10;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-70px;left:-50px;background:#06b6d4;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">
+            <span class="reveal tag-pill" style="background:linear-gradient(135deg,rgba(56,189,248,0.3),rgba(56,189,248,0.1));color:#38bdf8;border:1px solid rgba(56,189,248,0.3);">原則一</span>
+            <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(56,189,248,0.3),transparent);"></div>
+        </div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;color:#38bdf8;margin-bottom:1.5rem;">👀 觀察環境與興趣</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div style="display:flex;flex-direction:column;gap:0.8rem;">
+                <div class="reveal card-hover" style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.15);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:0.8rem;">
+                    <span style="font-size:1.45rem;flex-shrink:0;">👕</span>
+                    <div>
+                        <div style="font-weight:700;font-size:1.03rem;margin-bottom:0.2rem;">視覺觀察</div>
+                        <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">衣服、配件、手機殼、書包上的圖案或品牌</p>
+                    </div>
+                </div>
+                <div class="reveal card-hover" style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.15);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:0.8rem;">
+                    <span style="font-size:1.45rem;flex-shrink:0;">👂</span>
+                    <div>
+                        <div style="font-weight:700;font-size:1.03rem;margin-bottom:0.2rem;">聆聽線索</div>
+                        <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">對方提到的人名、地名、事件，從中找共鳴</p>
+                    </div>
+                </div>
+                <div class="reveal card-hover" style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.15);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:0.8rem;">
+                    <span style="font-size:1.45rem;flex-shrink:0;">📍</span>
+                    <div>
+                        <div style="font-weight:700;font-size:1.03rem;margin-bottom:0.2rem;">情境觀察</div>
+                        <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">教室、球場、活動現場本身就是最好的話題</p>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.5rem;">
+                <div style="font-size:1.15rem;text-transform:uppercase;letter-spacing:0.1em;color:#38bdf8;margin-bottom:1rem;font-weight:700;">🧠 三步驟口訣</div>
+                <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(56,189,248,0.3),rgba(56,189,248,0.1));display:flex;align-items:center;justify-content:center;font-weight:900;color:#38bdf8;flex-shrink:0;">看</div>
+                        <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;">觀察對方身上有什麼特別的地方</p>
+                    </div>
+                    <div style="width:1px;height:16px;background:rgba(56,189,248,0.2);margin-left:18px;"></div>
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(56,189,248,0.3),rgba(56,189,248,0.1));display:flex;align-items:center;justify-content:center;font-weight:900;color:#38bdf8;flex-shrink:0;">想</div>
+                        <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;">這個特徵可以延伸出什麼話題？</p>
+                    </div>
+                    <div style="width:1px;height:16px;background:rgba(56,189,248,0.2);margin-left:18px;"></div>
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(56,189,248,0.3),rgba(56,189,248,0.1));display:flex;align-items:center;justify-content:center;font-weight:900;color:#38bdf8;flex-shrink:0;">說</div>
+                        <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;">自然地提問，帶著好奇心開口</p>
+                    </div>
+                </div>
+                <div style="margin-top:1.2rem;padding:0.8rem;background:rgba(56,189,248,0.08);border-radius:10px;border-left:3px solid #38bdf8;">
+                    <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">💡 <strong style="color:var(--color-text);">示範：</strong>「你的耳機是哪個牌子？音質怎麼樣？」</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 6: 原則二 ═══ -->
+<div class="slide slide-6" data-slide="6">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:420px;height:420px;top:-90px;left:-80px;background:#fb923c;opacity:0.10;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-70px;right:-50px;background:#f97316;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">
+            <span class="reveal tag-pill" style="background:linear-gradient(135deg,rgba(251,146,60,0.3),rgba(251,146,60,0.1));color:#fb923c;border:1px solid rgba(251,146,60,0.3);">原則二</span>
+            <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(251,146,60,0.3),transparent);"></div>
+        </div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;color:#fb923c;margin-bottom:1.5rem;">🤝 共通點開場</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                <p class="reveal" style="font-size:1.15rem;color:var(--color-text-secondary);margin:0 0 0.25rem 0;">找到「我們都⋯⋯」的連結點：</p>
+                <div class="reveal card-hover" style="background:rgba(251,146,60,0.07);border:1px solid rgba(251,146,60,0.15);border-radius:12px;padding:0.9rem 1.1rem;display:flex;align-items:center;gap:0.8rem;">
+                    <span style="font-size:1.35rem;">🏫</span>
+                    <div><div style="font-weight:700;font-size:0.86rem;">共同環境</div><p style="font-size:0.92rem;color:var(--color-text-secondary);margin:0;">同班、同校、同社團</p></div>
+                </div>
+                <div class="reveal card-hover" style="background:rgba(251,146,60,0.07);border:1px solid rgba(251,146,60,0.15);border-radius:12px;padding:0.9rem 1.1rem;display:flex;align-items:center;gap:0.8rem;">
+                    <span style="font-size:1.35rem;">⏰</span>
+                    <div><div style="font-weight:700;font-size:0.86rem;">共同時間</div><p style="font-size:0.92rem;color:var(--color-text-secondary);margin:0;">一起等車、同場活動、同時等候</p></div>
+                </div>
+                <div class="reveal card-hover" style="background:rgba(251,146,60,0.07);border:1px solid rgba(251,146,60,0.15);border-radius:12px;padding:0.9rem 1.1rem;display:flex;align-items:center;gap:0.8rem;">
+                    <span style="font-size:1.35rem;">🎭</span>
+                    <div><div style="font-weight:700;font-size:0.86rem;">共同經歷</div><p style="font-size:0.92rem;color:var(--color-text-secondary);margin:0;">都參加過某活動、都經歷某件事</p></div>
+                </div>
+                <div class="reveal card-hover" style="background:rgba(251,146,60,0.07);border:1px solid rgba(251,146,60,0.15);border-radius:12px;padding:0.9rem 1.1rem;display:flex;align-items:center;gap:0.8rem;">
+                    <span style="font-size:1.35rem;">🤔</span>
+                    <div><div style="font-weight:700;font-size:0.86rem;">共同困境</div><p style="font-size:0.92rem;color:var(--color-text-secondary);margin:0;">都在找路、都在等人、都不確定</p></div>
+                </div>
+            </div>
+            <div class="reveal" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.5rem;">
+                <div style="font-size:1.15rem;text-transform:uppercase;letter-spacing:0.1em;color:#fb923c;margin-bottom:1rem;font-weight:700;">✍️ 句型模板</div>
+                <div style="background:rgba(251,146,60,0.1);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                    <p style="font-size:1.35rem;font-weight:700;color:#fb923c;margin:0 0 0.3rem 0;">「我們都⋯⋯」</p>
+                    <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">用共同點拉近距離，讓對方感到「你懂我」</p>
+                </div>
+                <div style="background:rgba(251,146,60,0.06);border-radius:10px;padding:1rem;margin-bottom:0.75rem;border-left:3px solid #fb923c;">
+                    <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">💡 <strong style="color:var(--color-text);">示範：</strong><br>「你也是來參加這個活動的嗎？」<br>「第一次來？我也是，你覺得怎麼樣？」</p>
+                </div>
+                <div style="padding:0.75rem;background:rgba(52,211,153,0.08);border-radius:8px;border-left:3px solid #34d399;">
+                    <p style="font-size:0.92rem;color:#34d399;margin:0;line-height:1.5;">✅ 重點：共通點讓人放鬆，<br>對話就更容易繼續</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 7: 原則三 ═══ -->
+<div class="slide slide-7" data-slide="7">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:420px;height:420px;top:-90px;right:-80px;background:#a78bfa;opacity:0.10;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-70px;left:-50px;background:#8b5cf6;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">
+            <span class="reveal tag-pill" style="background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));color:#a78bfa;border:1px solid rgba(167,139,250,0.3);">原則三</span>
+            <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(167,139,250,0.3),transparent);"></div>
+        </div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;color:#a78bfa;margin-bottom:1.5rem;">💬 開放問題延續</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="reveal" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.4rem;">
+                <div style="font-size:1.15rem;text-transform:uppercase;letter-spacing:0.1em;color:#f87171;margin-bottom:0.8rem;font-weight:700;">❌ 封閉式問題（避免）</div>
+                <div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.15);border-radius:10px;padding:1rem;margin-bottom:0.8rem;">
+                    <p style="font-size:0.97rem;margin:0 0 0.4rem 0;color:var(--color-text);">「你喜歡音樂嗎？」</p>
+                    <p style="font-size:1.25rem;color:#f87171;margin:0;">→ 「喜歡。」→ （沉默 😶）</p>
+                </div>
+                <p style="font-size:0.92rem;color:var(--color-text-muted);margin:0;line-height:1.5;">只能用是/否回答，話題容易終結</p>
+            </div>
+            <div class="reveal" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.4rem;">
+                <div style="font-size:1.15rem;text-transform:uppercase;letter-spacing:0.1em;color:#34d399;margin-bottom:0.8rem;font-weight:700;">✅ 開放式問題（推薦）</div>
+                <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.15);border-radius:10px;padding:1rem;margin-bottom:0.8rem;">
+                    <p style="font-size:0.97rem;margin:0 0 0.4rem 0;color:var(--color-text);">「你最近在聽什麼類型的音樂？」</p>
+                    <p style="font-size:1.25rem;color:#34d399;margin:0;">→ 對方開始分享，話題自然展開 🎵</p>
+                </div>
+                <p style="font-size:0.92rem;color:var(--color-text-muted);margin:0;line-height:1.5;">引發思考，讓對方有表達空間</p>
+            </div>
+        </div>
+        <div class="reveal" style="margin-top:1rem;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:1.1rem 1.5rem;">
+            <div style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <div style="font-size:1.15rem;color:#a78bfa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;font-weight:700;">開放式問題公式</div>
+                    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                        <span style="background:rgba(167,139,250,0.15);padding:0.25rem 0.75rem;border-radius:999px;font-size:0.92rem;color:#a78bfa;">你覺得⋯⋯？</span>
+                        <span style="background:rgba(167,139,250,0.15);padding:0.25rem 0.75rem;border-radius:999px;font-size:0.92rem;color:#a78bfa;">你平常⋯⋯？</span>
+                        <span style="background:rgba(167,139,250,0.15);padding:0.25rem 0.75rem;border-radius:999px;font-size:0.92rem;color:#a78bfa;">你最喜歡⋯⋯？</span>
+                        <span style="background:rgba(167,139,250,0.15);padding:0.25rem 0.75rem;border-radius:999px;font-size:0.92rem;color:#a78bfa;">那你的意思是⋯⋯？</span>
+                    </div>
+                </div>
+                <div style="border-left:1px solid rgba(167,139,250,0.2);padding-left:2rem;">
+                    <div style="font-size:1.15rem;color:#a78bfa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;font-weight:700;">追問技巧</div>
+                    <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;">「後來呢？」「那你怎麼看？」</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 8: 示範例子一（音樂）═══ -->
+<div class="slide slide-8" data-slide="8">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:400px;height:400px;top:-100px;right:-80px;background:#38bdf8;opacity:0.09;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:#fb923c;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(56,189,248,0.12);color:#38bdf8;margin-bottom:0.75rem;">示範例子 ①</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;margin-bottom:0.4rem;">🎵 音樂話題對話練習</h2>
+        <p class="reveal" style="font-size:1.15rem;color:var(--color-text-secondary);margin-bottom:1.5rem;">情境：在活動現場等待時，發現對方戴著耳機</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="reveal" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:16px;padding:1.4rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                    <span style="font-size:1.25rem;">❌</span>
+                    <span style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#f87171;font-weight:700;">錯誤示範</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="background:rgba(248,113,113,0.1);border-radius:10px;padding:0.9rem;">
+                        <div style="font-size:0.97rem;color:#f87171;margin-bottom:0.3rem;font-weight:700;">開場（封閉問題）</div>
+                        <p style="font-size:1.15rem;margin:0;color:var(--color-text);">「你喜歡音樂嗎？」</p>
+                    </div>
+                    <div style="background:rgba(100,100,100,0.1);border-radius:10px;padding:0.9rem;">
+                        <div style="font-size:0.97rem;color:var(--color-text-muted);margin-bottom:0.3rem;font-weight:700;">對方回答</div>
+                        <p style="font-size:1.15rem;margin:0;color:var(--color-text);">「喜歡。」</p>
+                    </div>
+                    <div style="background:rgba(248,113,113,0.08);border-radius:10px;padding:0.9rem;text-align:center;">
+                        <p style="font-size:1.15rem;margin:0;color:#f87171;">😶 ⋯⋯（尷尬沉默）</p>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal" style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2);border-radius:16px;padding:1.4rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                    <span style="font-size:1.25rem;">✅</span>
+                    <span style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#34d399;font-weight:700;">正確示範（三原則）</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.65rem;">
+                    <div style="background:rgba(56,189,248,0.1);border-radius:10px;padding:0.8rem;border-left:3px solid #38bdf8;">
+                        <div style="font-size:0.65rem;color:#38bdf8;margin-bottom:0.25rem;font-weight:700;">👀 原則一｜觀察</div>
+                        <p style="font-size:1.25rem;margin:0;color:var(--color-text-secondary);">看到對方戴著耳機 → 話題切入</p>
+                    </div>
+                    <div style="background:rgba(251,146,60,0.1);border-radius:10px;padding:0.8rem;border-left:3px solid #fb923c;">
+                        <div style="font-size:0.65rem;color:#fb923c;margin-bottom:0.25rem;font-weight:700;">🤝 原則二｜開場</div>
+                        <p style="font-size:1.25rem;margin:0;color:var(--color-text);">「你在聽什麼歌？最近有什麼推薦的嗎？」</p>
+                    </div>
+                    <div style="background:rgba(167,139,250,0.1);border-radius:10px;padding:0.8rem;border-left:3px solid #a78bfa;">
+                        <div style="font-size:0.65rem;color:#a78bfa;margin-bottom:0.25rem;font-weight:700;">💬 原則三｜延續</div>
+                        <p style="font-size:1.25rem;margin:0;color:var(--color-text);">「你都聽哪種風格？」「是什麼讓你喜歡上這個歌手的？」</p>
+                    </div>
+                    <div style="background:rgba(52,211,153,0.1);border-radius:8px;padding:0.6rem;text-align:center;">
+                        <p style="font-size:1.25rem;margin:0;color:#34d399;">🎵 對話自然流動，越聊越開心！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 9: 示範例子二（遊戲）═══ -->
+<div class="slide slide-9" data-slide="9">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:400px;height:400px;top:-100px;left:-80px;background:#a78bfa;opacity:0.09;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-60px;right:-40px;background:#fb923c;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(167,139,250,0.12);color:#a78bfa;margin-bottom:0.75rem;">示範例子 ②</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;margin-bottom:0.4rem;">🎮 遊戲話題對話練習</h2>
+        <p class="reveal" style="font-size:1.15rem;color:var(--color-text-secondary);margin-bottom:1.5rem;">情境：看到對方正在玩手機遊戲</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="reveal" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:16px;padding:1.4rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                    <span style="font-size:1.25rem;">❌</span>
+                    <span style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#f87171;font-weight:700;">錯誤示範</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="background:rgba(248,113,113,0.1);border-radius:10px;padding:0.9rem;">
+                        <div style="font-size:0.97rem;color:#f87171;margin-bottom:0.3rem;font-weight:700;">開場（太直接）</div>
+                        <p style="font-size:1.15rem;margin:0;color:var(--color-text);">「你在玩遊戲？」</p>
+                    </div>
+                    <div style="background:rgba(100,100,100,0.1);border-radius:10px;padding:0.9rem;">
+                        <div style="font-size:0.97rem;color:var(--color-text-muted);margin-bottom:0.3rem;font-weight:700;">對方回答</div>
+                        <p style="font-size:1.15rem;margin:0;color:var(--color-text);">「對。」</p>
+                    </div>
+                    <div style="background:rgba(248,113,113,0.08);border-radius:10px;padding:0.9rem;text-align:center;">
+                        <p style="font-size:1.15rem;margin:0;color:#f87171;">😐 話題終結…</p>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal" style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2);border-radius:16px;padding:1.4rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                    <span style="font-size:1.25rem;">✅</span>
+                    <span style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#34d399;font-weight:700;">正確示範（三原則）</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.65rem;">
+                    <div style="background:rgba(56,189,248,0.1);border-radius:10px;padding:0.8rem;border-left:3px solid #38bdf8;">
+                        <div style="font-size:0.65rem;color:#38bdf8;margin-bottom:0.25rem;font-weight:700;">👀 原則一｜觀察</div>
+                        <p style="font-size:1.25rem;margin:0;color:var(--color-text-secondary);">看到對方在玩某款遊戲 → 找共鳴點</p>
+                    </div>
+                    <div style="background:rgba(251,146,60,0.1);border-radius:10px;padding:0.8rem;border-left:3px solid #fb923c;">
+                        <div style="font-size:0.65rem;color:#fb923c;margin-bottom:0.25rem;font-weight:700;">🤝 原則二｜共通開場</div>
+                        <p style="font-size:1.25rem;margin:0;color:var(--color-text);">「你在玩什麼？這款我有聽說但沒玩過」</p>
+                    </div>
+                    <div style="background:rgba(167,139,250,0.1);border-radius:10px;padding:0.8rem;border-left:3px solid #a78bfa;">
+                        <div style="font-size:0.65rem;color:#a78bfa;margin-bottom:0.25rem;font-weight:700;">💬 原則三｜延續</div>
+                        <p style="font-size:1.25rem;margin:0;color:var(--color-text);">「你玩多久了？哪個角色最好用？」</p>
+                    </div>
+                    <div style="background:rgba(52,211,153,0.1);border-radius:8px;padding:0.6rem;text-align:center;">
+                        <p style="font-size:1.25rem;margin:0;color:#34d399;">🎮 遊戲玩家超好聊！自然展開！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 10: 賓果破冰（說明）═══ -->
+<div class="slide slide-10" data-slide="10">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:460px;height:460px;top:-100px;right:-100px;background:#fb923c;opacity:0.12;"></div>
+        <div class="blob" style="width:300px;height:300px;bottom:-80px;left:-60px;background:#38bdf8;opacity:0.09;"></div>
+    </div>
+    <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">
+            <span class="reveal tag-pill" style="background:rgba(251,146,60,0.12);color:#fb923c;border:1px solid rgba(251,146,60,0.25);">遊戲實作 ①</span>
+            <span class="reveal tag-pill" style="background:rgba(255,255,255,0.05);color:var(--color-text-muted);">⏱ 15 分鐘</span>
+        </div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2.2rem,4.5vw,3.2rem);font-weight:900;margin-bottom:1.5rem;">🎯 賓果破冰遊戲</h2>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:1.5rem;align-items:start;">
+            <div style="display:flex;flex-direction:column;gap:0.9rem;">
+                <div class="reveal card-hover" style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.15);border-radius:14px;padding:1.1rem;display:flex;gap:1rem;align-items:flex-start;">
+                    <span style="font-size:1.75rem;flex-shrink:0;">📋</span>
+                    <div><div style="font-weight:700;font-size:1.35rem;margin-bottom:0.25rem;">拿到賓果卡</div><p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">每人一張 5×5 = 25 格的興趣賓果卡</p></div>
+                </div>
+                <div class="reveal card-hover" style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.15);border-radius:14px;padding:1.1rem;display:flex;gap:1rem;align-items:flex-start;">
+                    <span style="font-size:1.75rem;flex-shrink:0;">🚶</span>
+                    <div><div style="font-weight:700;font-size:1.35rem;margin-bottom:0.25rem;">走動找人</div><p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">找到和你同答案的人，請他在格子上簽名</p></div>
+                </div>
+                <div class="reveal card-hover" style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.15);border-radius:14px;padding:1.1rem;display:flex;gap:1rem;align-items:flex-start;">
+                    <span style="font-size:1.75rem;flex-shrink:0;">🏆</span>
+                    <div><div style="font-weight:700;font-size:1.35rem;margin-bottom:0.25rem;">完成三連線</div><p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">橫、直、斜任一方向三連線即完成！</p></div>
+                </div>
+                <div class="reveal" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);border-radius:14px;padding:1.1rem;">
+                    <div style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#38bdf8;margin-bottom:0.4rem;font-weight:700;">🎓 學習重點</div>
+                    <p style="font-size:1.25rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">練習觀察 + 自然開場，用「你有沒有⋯⋯」問句和陌生人互動</p>
+                </div>
+            </div>
+            <div class="reveal">
+                <div style="font-size:1.15rem;text-transform:uppercase;letter-spacing:0.08em;color:#fb923c;margin-bottom:0.75rem;font-weight:700;">賓果卡範例（部分）</div>
+                <div class="bingo-grid">
+                    <div class="bingo-cell">喜歡看韓劇</div>
+                    <div class="bingo-cell">會彈吉他</div>
+                    <div class="bingo-cell">有養寵物</div>
+                    <div class="bingo-cell">打籃球</div>
+                    <div class="bingo-cell">熬夜型</div>
+                    <div class="bingo-cell">追動漫</div>
+                    <div class="bingo-cell">怕蟑螂</div>
+                    <div class="bingo-cell free">⭐<br>FREE</div>
+                    <div class="bingo-cell">游泳</div>
+                    <div class="bingo-cell">喜歡歷史</div>
+                    <div class="bingo-cell">玩手遊</div>
+                    <div class="bingo-cell">不吃香菜</div>
+                    <div class="bingo-cell">騎腳踏車</div>
+                    <div class="bingo-cell">容易臉紅</div>
+                    <div class="bingo-cell">愛吃甜食</div>
+                    <div class="bingo-cell">聽流行歌</div>
+                    <div class="bingo-cell">怕上台報告</div>
+                    <div class="bingo-cell">喜歡整理</div>
+                    <div class="bingo-cell">跑步</div>
+                    <div class="bingo-cell">早起型</div>
+                    <div class="bingo-cell">看YouTube</div>
+                    <div class="bingo-cell">喜歡數學</div>
+                    <div class="bingo-cell">常忘東忘西</div>
+                    <div class="bingo-cell">打羽球</div>
+                    <div class="bingo-cell">在學才藝</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 11: 角色扮演（說明）═══ -->
+<div class="slide slide-11" data-slide="11">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:440px;height:440px;top:-100px;left:-80px;background:#a78bfa;opacity:0.11;"></div>
+        <div class="blob" style="width:300px;height:300px;bottom:-70px;right:-50px;background:#38bdf8;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">
+            <span class="reveal tag-pill" style="background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.25);">遊戲實作 ②</span>
+            <span class="reveal tag-pill" style="background:rgba(255,255,255,0.05);color:var(--color-text-muted);">⏱ 15 分鐘</span>
+        </div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2.2rem,4.5vw,3.2rem);font-weight:900;margin-bottom:1.5rem;">🎭 角色扮演練習</h2>
+        <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:1.5rem;">
+            <div style="display:flex;flex-direction:column;gap:0.9rem;">
+                <div class="reveal" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:14px;padding:1.3rem;">
+                    <div style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;margin-bottom:0.8rem;font-weight:700;">📋 進行方式</div>
+                    <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                        <div style="display:flex;align-items:flex-start;gap:0.7rem;">
+                            <span style="background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));color:#a78bfa;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.86rem;font-weight:900;flex-shrink:0;margin-top:1px;">1</span>
+                            <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">3～4 人一組分組</p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start;gap:0.7rem;">
+                            <span style="background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));color:#a78bfa;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.86rem;font-weight:900;flex-shrink:0;margin-top:1px;">2</span>
+                            <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">抽「情境卡」決定場景（等公車、班會前等）</p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start;gap:0.7rem;">
+                            <span style="background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));color:#a78bfa;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.86rem;font-weight:900;flex-shrink:0;margin-top:1px;">3</span>
+                            <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">抽「話題卡」決定引導方向（音樂、遊戲等）</p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start;gap:0.7rem;">
+                            <span style="background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));color:#a78bfa;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.86rem;font-weight:900;flex-shrink:0;margin-top:1px;">4</span>
+                            <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">一人扮演「帶動者」，練習三原則開場+延續</p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start;gap:0.7rem;">
+                            <span style="background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));color:#a78bfa;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.86rem;font-weight:900;flex-shrink:0;margin-top:1px;">5</span>
+                            <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">其他人給予回饋，輪流擔任帶動者</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal" style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:1.1rem;">
+                    <div style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;margin-bottom:0.6rem;font-weight:700;">🎓 學習重點</div>
+                    <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">在安全的情境中練習，讓「三原則」變成自然反應，降低真實場合的緊張感</p>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.9rem;">
+                <div class="reveal" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:14px;padding:1.3rem;">
+                    <div style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#fb923c;margin-bottom:0.8rem;font-weight:700;">📍 情境卡範例</div>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <div style="background:rgba(251,146,60,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #fb923c;">🏫 第一次社團集合，等點名中</div>
+                        <div style="background:rgba(251,146,60,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #fb923c;">🚌 學校旅遊，與不熟同學同組</div>
+                        <div style="background:rgba(251,146,60,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #fb923c;">🌧 放學等公車，雨天一起躲雨</div>
+                        <div style="background:rgba(251,146,60,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #fb923c;">🍱 午餐時間，旁邊坐不熟同學</div>
+                    </div>
+                </div>
+                <div class="reveal" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:14px;padding:1.3rem;">
+                    <div style="font-size:0.86rem;text-transform:uppercase;letter-spacing:0.08em;color:#38bdf8;margin-bottom:0.8rem;font-weight:700;">💬 話題卡範例</div>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <div style="background:rgba(56,189,248,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #38bdf8;">🎵 你喜歡什麼音樂？（+延續技巧）</div>
+                        <div style="background:rgba(56,189,248,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #38bdf8;">🏖 你假日都做什麼？（+延續技巧）</div>
+                        <div style="background:rgba(56,189,248,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #38bdf8;">📺 你有在追什麼劇嗎？（+延續技巧）</div>
+                        <div style="background:rgba(56,189,248,0.08);padding:0.6rem 0.9rem;border-radius:8px;font-size:0.97rem;border-left:3px solid #38bdf8;">🍜 你最喜歡哪道菜？（+延續技巧）</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 12: 觀察評分表 ═══ -->
+<div class="slide slide-12" data-slide="12">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:400px;height:400px;top:-90px;right:-80px;background:#34d399;opacity:0.09;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:#a78bfa;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(52,211,153,0.12);color:#34d399;margin-bottom:0.75rem;">角色扮演觀察重點</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;margin-bottom:0.5rem;">📝 幫隊員打分數！</h2>
+        <p class="reveal" style="font-size:1.15rem;color:var(--color-text-secondary);margin-bottom:1.5rem;">當你是「觀察員」時，用以下重點觀察帶動者的表現</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:14px;padding:1.3rem;border-left:4px solid #38bdf8;">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem;">
+                    <span style="font-size:1.35rem;">👀</span>
+                    <div style="font-weight:800;font-size:1.35rem;color:#38bdf8;">原則一檢查</div>
+                </div>
+                <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0 0 0.5rem 0;line-height:1.5;">有沒有先觀察對方的特徵或環境線索再開口？</p>
+                <div style="display:flex;gap:0.5rem;">
+                    <span style="background:rgba(52,211,153,0.15);color:#34d399;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✓ 有觀察</span>
+                    <span style="background:rgba(248,113,113,0.15);color:#f87171;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✗ 直接開口</span>
+                </div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:14px;padding:1.3rem;border-left:4px solid #fb923c;">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem;">
+                    <span style="font-size:1.35rem;">🤝</span>
+                    <div style="font-weight:800;font-size:1.35rem;color:#fb923c;">原則二檢查</div>
+                </div>
+                <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0 0 0.5rem 0;line-height:1.5;">開場白有沒有利用共通點？感覺自然還是生硬？</p>
+                <div style="display:flex;gap:0.5rem;">
+                    <span style="background:rgba(52,211,153,0.15);color:#34d399;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✓ 很自然</span>
+                    <span style="background:rgba(248,113,113,0.15);color:#f87171;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✗ 有點怪</span>
+                </div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:14px;padding:1.3rem;border-left:4px solid #a78bfa;">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem;">
+                    <span style="font-size:1.35rem;">💬</span>
+                    <div style="font-weight:800;font-size:1.35rem;color:#a78bfa;">原則三檢查</div>
+                </div>
+                <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0 0 0.5rem 0;line-height:1.5;">問的是開放式還是封閉式問題？有沒有讓話題延續？</p>
+                <div style="display:flex;gap:0.5rem;">
+                    <span style="background:rgba(52,211,153,0.15);color:#34d399;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✓ 開放式</span>
+                    <span style="background:rgba(248,113,113,0.15);color:#f87171;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✗ 封閉式</span>
+                </div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:14px;padding:1.3rem;border-left:4px solid #34d399;">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem;">
+                    <span style="font-size:1.35rem;">😊</span>
+                    <div style="font-weight:800;font-size:1.35rem;color:#34d399;">整體感受</div>
+                </div>
+                <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0 0 0.5rem 0;line-height:1.5;">整體互動感覺輕鬆自然嗎？你有被吸引繼續聊嗎？</p>
+                <div style="display:flex;gap:0.5rem;">
+                    <span style="background:rgba(52,211,153,0.15);color:#34d399;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✓ 很輕鬆</span>
+                    <span style="background:rgba(248,113,113,0.15);color:#f87171;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.86rem;">✗ 有點尷尬</span>
+                </div>
+            </div>
+        </div>
+        <div class="reveal" style="margin-top:1rem;background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.15);border-radius:12px;padding:0.9rem 1.5rem;">
+            <p style="font-size:0.98rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">💡 <strong style="color:var(--color-text);">給回饋的原則：</strong>先說一個做得好的地方，再說一個可以改善的地方，具體說明「哪個時機」「如何調整」</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 13: 優雅結束話題 ═══ -->
+<div class="slide slide-13" data-slide="13">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:420px;height:420px;top:-90px;right:-80px;background:#38bdf8;opacity:0.10;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-70px;left:-50px;background:#34d399;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(52,211,153,0.12);color:#34d399;margin-bottom:0.75rem;">分享總結</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;margin-bottom:0.5rem;">✨ 優雅結束話題的技巧</h2>
+        <p class="reveal" style="font-size:1.15rem;color:var(--color-text-secondary);margin-bottom:1.5rem;">好的結束讓人期待下次聊天，是建立關係的關鍵一步</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.3rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.8rem;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(56,189,248,0.3),rgba(56,189,248,0.1));display:flex;align-items:center;justify-content:center;font-weight:900;color:#38bdf8;font-size:1.15rem;flex-shrink:0;">1</div>
+                    <div style="font-weight:800;color:#38bdf8;">總結句</div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0 0 0.75rem 0;line-height:1.5;">對這次對話做個正向總結，讓對方感到被珍視</p>
+                <div style="background:rgba(56,189,248,0.08);border-radius:10px;padding:0.75rem;border-left:3px solid #38bdf8;">
+                    <p style="font-size:0.97rem;color:var(--color-text);margin:0;">「跟你聊超開心，改天再聊！」</p>
+                </div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.3rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.8rem;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(251,146,60,0.3),rgba(251,146,60,0.1));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fb923c;font-size:1.15rem;flex-shrink:0;">2</div>
+                    <div style="font-weight:800;color:#fb923c;">行動句</div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0 0 0.75rem 0;line-height:1.5;">用行動作為自然的結束信號，不顯突兀</p>
+                <div style="background:rgba(251,146,60,0.08);border-radius:10px;padding:0.75rem;border-left:3px solid #fb923c;">
+                    <p style="font-size:0.97rem;color:var(--color-text);margin:0;">「我去找一下朋友，等等見！」</p>
+                </div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.3rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.8rem;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(167,139,250,0.3),rgba(167,139,250,0.1));display:flex;align-items:center;justify-content:center;font-weight:900;color:#a78bfa;font-size:1.15rem;flex-shrink:0;">3</div>
+                    <div style="font-weight:800;color:#a78bfa;">邀約句</div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0 0 0.75rem 0;line-height:1.5;">結束時拋出下次互動的可能性</p>
+                <div style="background:rgba(167,139,250,0.08);border-radius:10px;padding:0.75rem;border-left:3px solid #a78bfa;">
+                    <p style="font-size:0.97rem;color:var(--color-text);margin:0;">「下次你要不要一起去⋯⋯？」</p>
+                </div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.3rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.8rem;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(52,211,153,0.3),rgba(52,211,153,0.1));display:flex;align-items:center;justify-content:center;font-weight:900;color:#34d399;font-size:1.15rem;flex-shrink:0;">4</div>
+                    <div style="font-weight:800;color:#34d399;">開放句</div>
+                </div>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0 0 0.75rem 0;line-height:1.5;">在自然結束的同時建立長期連結</p>
+                <div style="background:rgba(52,211,153,0.08);border-radius:10px;padding:0.75rem;border-left:3px solid #34d399;">
+                    <p style="font-size:0.97rem;color:var(--color-text);margin:0;">「對了，你有 LINE 嗎？可以互相推薦歌！」</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 14: 課後應用承諾 ═══ -->
+<div class="slide slide-14" data-slide="14">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:440px;height:440px;top:-100px;right:-90px;background:#fb923c;opacity:0.11;"></div>
+        <div class="blob" style="width:300px;height:300px;bottom:-80px;left:-60px;background:#38bdf8;opacity:0.08;"></div>
+        <div class="blob" style="width:200px;height:200px;top:40%;left:20%;background:#a78bfa;opacity:0.07;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(251,146,60,0.12);color:#fb923c;margin-bottom:0.75rem;">課後應用</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;margin-bottom:0.5rem;">🎯 本週三個挑戰</h2>
+        <p class="reveal" style="font-size:1.15rem;color:var(--color-text-secondary);margin-bottom:1.5rem;">帶著今天學的三原則，在真實生活中練習看看！</p>
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.3rem 1.8rem;display:flex;align-items:center;gap:1.5rem;">
+                <div style="font-size:3rem;flex-shrink:0;">🎯</div>
+                <div style="flex:1;">
+                    <div style="font-weight:800;font-size:1.25rem;color:#38bdf8;margin-bottom:0.3rem;">挑戰一：今天就試試</div>
+                    <p style="font-size:1.15rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">今天回家前，找一個不太熟的人，用「觀察開場」試著開啟話題</p>
+                </div>
+                <div style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.2);border-radius:10px;padding:0.5rem 0.9rem;font-size:1.03rem;color:#38bdf8;font-weight:700;white-space:nowrap;">今天</div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.3rem 1.8rem;display:flex;align-items:center;gap:1.5rem;">
+                <div style="font-size:3rem;flex-shrink:0;">📓</div>
+                <div style="flex:1;">
+                    <div style="font-weight:800;font-size:1.25rem;color:#fb923c;margin-bottom:0.3rem;">挑戰二：記錄你的成功</div>
+                    <p style="font-size:1.15rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">下次上課前，記錄一次「成功找話題」的真實經驗，準備分享</p>
+                </div>
+                <div style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.2);border-radius:10px;padding:0.5rem 0.9rem;font-size:1.03rem;color:#fb923c;font-weight:700;white-space:nowrap;">本週</div>
+            </div>
+            <div class="reveal card-hover" style="background:var(--color-glass-bg);backdrop-filter:blur(12px);border:1px solid var(--color-glass-border);border-radius:16px;padding:1.3rem 1.8rem;display:flex;align-items:center;gap:1.5rem;">
+                <div style="font-size:3rem;flex-shrink:0;">👨‍👩‍👧</div>
+                <div style="flex:1;">
+                    <div style="font-weight:800;font-size:1.25rem;color:#a78bfa;margin-bottom:0.3rem;">挑戰三：把技巧傳出去</div>
+                    <p style="font-size:1.15rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">把三原則教給家人或朋友，教別人是最好的學習方式！</p>
+                </div>
+                <div style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:10px;padding:0.5rem 0.9rem;font-size:1.03rem;color:#a78bfa;font-weight:700;white-space:nowrap;">本週</div>
+            </div>
+        </div>
+        <div class="reveal" style="margin-top:1rem;text-align:center;">
+            <p style="font-size:0.97rem;color:var(--color-text-muted);">💬 可以到班群分享，或下次課堂口頭分享你的挑戰心得！</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 15: 分享回饋引導 ═══ -->
+<div class="slide slide-15" data-slide="15">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:400px;height:400px;top:-80px;left:-80px;background:#34d399;opacity:0.10;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-60px;right:-40px;background:#38bdf8;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <p class="reveal tag-pill" style="background:rgba(52,211,153,0.12);color:#34d399;margin-bottom:0.75rem;">分享與回饋環節</p>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,4.2vw,3rem);font-weight:900;margin-bottom:0.5rem;">🙋 我們一起來分享</h2>
+        <p class="reveal" style="font-size:1.15rem;color:var(--color-text-secondary);margin-bottom:1.5rem;">引導大家回顧今天的學習收穫，每個回答都很有價值！</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="reveal card-hover" style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.15);border-radius:16px;padding:1.3rem;">
+                <div style="font-size:1.65rem;margin-bottom:0.6rem;">🌟</div>
+                <p style="font-weight:700;font-size:1.35rem;margin:0 0 0.5rem 0;color:#34d399;">最有用的原則？</p>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">今天哪個原則對你最有用？為什麼？</p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.15);border-radius:16px;padding:1.3rem;">
+                <div style="font-size:1.65rem;margin-bottom:0.6rem;">😮</div>
+                <p style="font-weight:700;font-size:1.35rem;margin:0 0 0.5rem 0;color:#38bdf8;">賓果遊戲的發現？</p>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">賓果遊戲中，有什麼讓你意外的發現嗎？</p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(251,146,60,0.07);border:1px solid rgba(251,146,60,0.15);border-radius:16px;padding:1.3rem;">
+                <div style="font-size:1.65rem;margin-bottom:0.6rem;">🤹</div>
+                <p style="font-weight:700;font-size:1.35rem;margin:0 0 0.5rem 0;color:#fb923c;">最難的部分？</p>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">角色扮演時，你覺得最挑戰的地方是什麼？</p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.15);border-radius:16px;padding:1.3rem;">
+                <div style="font-size:1.65rem;margin-bottom:0.6rem;">🎯</div>
+                <p style="font-weight:700;font-size:1.35rem;margin:0 0 0.5rem 0;color:#a78bfa;">下一步計畫？</p>
+                <p style="font-size:0.97rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">你想到可以找誰練習找話題技巧嗎？</p>
+            </div>
+        </div>
+        <div class="reveal" style="margin-top:1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1rem 1.5rem;text-align:center;">
+            <p style="font-size:1.15rem;color:var(--color-text-secondary);margin:0;line-height:1.5;">⏱ <strong style="color:var(--color-text);">引導時間分配：</strong>每題 2 分鐘，請 2～3 人分享，時間不夠時可以讓大家舉手示意</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 16: 結語 ═══ -->
+<div class="slide slide-16" data-slide="16">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:520px;height:520px;top:-120px;right:-120px;background:var(--color-accent-1);opacity:0.14;"></div>
+        <div class="blob" style="width:340px;height:340px;bottom:-100px;left:-80px;background:var(--color-accent-2);opacity:0.12;"></div>
+        <div class="blob" style="width:240px;height:240px;top:30%;left:15%;background:var(--color-accent-3);opacity:0.10;"></div>
+    </div>
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content text-center">
+        <div class="reveal" style="font-size:90px;margin-bottom:1.5rem;animation:float 3s ease-in-out infinite;">💬</div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2.2rem,5vw,3.6rem);font-weight:900;background:linear-gradient(135deg,#38bdf8,#fb923c,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1.5rem;line-height:1.3;">找話題不是天生的<br>是練習出來的</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;max-width:800px;margin:0 auto 2rem auto;">
+            <div class="reveal card-hover" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);border-radius:14px;padding:1rem;">
+                <div style="font-size:2rem;margin-bottom:0.5rem;">👀</div>
+                <div style="font-size:0.92rem;font-weight:800;color:#38bdf8;margin-bottom:0.3rem;">觀察</div>
+                <p style="font-size:1.03rem;color:var(--color-text-muted);margin:0;">看→想→說<br>三步驟</p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.15);border-radius:14px;padding:1rem;">
+                <div style="font-size:2rem;margin-bottom:0.5rem;">🤝</div>
+                <div style="font-size:0.92rem;font-weight:800;color:#fb923c;margin-bottom:0.3rem;">共通點</div>
+                <p style="font-size:1.03rem;color:var(--color-text-muted);margin:0;">「我們都⋯⋯」<br>句型開場</p>
+            </div>
+            <div class="reveal card-hover" style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:1rem;">
+                <div style="font-size:2rem;margin-bottom:0.5rem;">💬</div>
+                <div style="font-size:0.92rem;font-weight:800;color:#a78bfa;margin-bottom:0.3rem;">開放問題</div>
+                <p style="font-size:1.03rem;color:var(--color-text-muted);margin:0;">「你覺得⋯⋯？」<br>讓話題延續</p>
+            </div>
+        </div>
+        <p class="reveal" style="font-size:clamp(1rem,2vw,1.3rem);color:var(--color-text-secondary);font-weight:600;margin-bottom:0.5rem;">每一次嘗試都是一次進步 🚀</p>
+        <p class="reveal" style="font-size:1.35rem;color:var(--color-text-muted);">你比你想的更有話聊！</p>
+    </div>
+</div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav-controls">
+    <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+    <div class="slide-dots" id="dots"></div>
+    <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+    <span class="slide-counter" id="counter">1 / 16</span>
+</div>
+
+<script>
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    const dotsContainer = document.getElementById('dots');
+    const counter = document.getElementById('counter');
+    for (let i = 1; i <= total; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i === 1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+    counter.textContent = '1 / ' + total;
+
+    function goToSlide(n) {
+        const prev = document.querySelector('.slide.active');
+        const next = document.querySelector('.slide[data-slide="' + n + '"]');
+        if (prev) prev.classList.remove('active');
+        if (next) { next.classList.add('active'); animateSlide(next); }
+        current = n; updateNav();
+    }
+    function changeSlide(dir) { let next = current + dir; if (next < 1) next = total; if (next > total) next = 1; goToSlide(next); }
+    function updateNav() { document.querySelectorAll('.dot').forEach((d, i) => { d.classList.toggle('active', i + 1 === current); }); counter.textContent = current + ' / ' + total; }
+    document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); } });
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
+
+    function animateSlide(slide) {
+        slide.querySelectorAll('.reveal').forEach((el, i) => {
+            el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)';
+            el.offsetHeight;
+            const delay = i * 0.08;
+            el.style.transition = 'opacity 0.35s ease ' + delay + 's, transform 0.35s ease ' + delay + 's';
+            el.style.opacity = '1'; el.style.transform = 'translateY(0px)';
+        });
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        const spotlight = document.querySelector('.mouse-spotlight');
+        if (spotlight) spotlight.style.background = 'radial-gradient(600px circle at ' + e.clientX + 'px ' + e.clientY + 'px, rgba(56,189,248,0.05), transparent 40%)';
+    });
+
+    window.initParticles = function(canvas, options) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth || window.innerWidth;
+        canvas.height = canvas.offsetHeight || window.innerHeight;
+        const interactive = options.interactive !== false;
+        const count = options.count || (interactive ? 55 : 18);
+        let mx = -1000, my = -1000;
+        const particles = Array.from({ length: count }, () => ({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+            size: Math.random() * 2 + 0.8, alpha: Math.random() * 0.3 + 0.08
+        }));
+        if (interactive) {
+            canvas.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; });
+            canvas.addEventListener('mouseleave', () => { mx = -1000; my = -1000; });
+        }
+        (function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                if (interactive) { const dx = p.x - mx, dy = p.y - my, dist = Math.sqrt(dx*dx+dy*dy); if (dist < 120) { const force = (120-dist)/120*2; p.vx += (dx/dist)*force*0.1; p.vy += (dy/dist)*force*0.1; } }
+                p.vx *= 0.98; p.vy *= 0.98; p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(56,189,248,' + p.alpha + ')'; ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        })();
+    };
+    document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, { interactive: true, count: 55 }));
+    document.querySelectorAll('.particle-canvas-ambient').forEach(c => window.initParticles(c, { interactive: false, count: 18 }));
+
+    try { animateSlide(document.querySelector('.slide.active')); } catch(e) { console.warn(e); }
+</script>
+</body>
+</html>
