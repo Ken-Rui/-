@@ -1011,7 +1011,7 @@
 <!-- NAVIGATION -->
 <div class="nav-controls">
     <button class="nav-btn" onclick="changeSlide(-1)">‹</button>
-    <div class="slide-dots" id="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="slide-dots" id="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
     <button class="nav-btn" onclick="changeSlide(1)">›</button>
     <span class="slide-counter" id="counter">1 / 15</span>
 </div>
@@ -1035,6 +1035,17 @@
     function updateNav() { document.querySelectorAll('.dot').forEach((d, i) => { d.classList.toggle('active', i + 1 === current); }); counter.textContent = current + ' / ' + total; }
     document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); } });
     let touchStartX = 0;
+    let wheelLocked = false;
+    document.addEventListener('wheel', (e) => {
+        if (wheelLocked) return;
+        const absY = Math.abs(e.deltaY);
+        const absX = Math.abs(e.deltaX);
+        if (absY < 18 || absY < absX) return;
+        e.preventDefault();
+        wheelLocked = true;
+        changeSlide(e.deltaY > 0 ? 1 : -1);
+        setTimeout(() => { wheelLocked = false; }, 450);
+    }, { passive: false });
     document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
     document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
 
